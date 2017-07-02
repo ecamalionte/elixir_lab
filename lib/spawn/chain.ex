@@ -24,4 +24,6 @@ defmodule Chain do
   end
 end
 
-Enum.reduce 1..100, 0, fn (n,_) -> Chain.run(n) end
+#Enum.reduce 1..100, 0, fn (n,_) -> Chain.run(n) end
+# elixir --erl "+P 1000000" -r lib/spawn/chain.ex
+Chain.run(1_000_000)
