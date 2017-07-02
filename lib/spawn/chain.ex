@@ -2,7 +2,6 @@ defmodule Chain do
   def counter(next_pid) do
     receive do
       n ->
-        IO.inspect next_pid
         send next_pid, n + 1
     end
   end
@@ -25,4 +24,4 @@ defmodule Chain do
   end
 end
 
-Chain.run(10)
+Enum.reduce 1..100, 0, fn (n,_) -> Chain.run(n) end
