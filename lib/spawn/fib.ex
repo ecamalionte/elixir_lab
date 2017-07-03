@@ -15,19 +15,23 @@ defmodule FibSolver do
 end
 
 defmodule Scheduler do
-  def run(num_process, module, func, to_calculate) do
+
+  # spawns a quantity of process to prepare the job(queue) execution
+  def run(num_process, module, func, queue_to_calculate) do
     (1..num_process)
     |> Enum.map(fn(_) -> spawn(module, func, [self()]) end)
-    |> schedule_processes(to_calculate, [])
+    |> schedule_processes(queue_to_calculate, [])
   end
 
   defp schedule_processes(processes, queue, results) do
     receive do
+      # while has work in the queue
       {:ready, pid} when length(queue) > 0 ->
         [next|tail] = queue
         send pid, {:fib, next, self()}
         schedule_processes(processes, tail, results)
 
+      # when has no more work to do: send a shutdown
       {:ready, pid} ->
         send pid, {:shutdown}
         if length(processes) > 1 do
@@ -36,17 +40,18 @@ defmodule Scheduler do
           Enum.sort(results, fn {n1, _}, {n2, _} -> n1 <= n2 end)
         end
 
-      {:answer, number, result, _pid} ->
-        schedule_processes(processes, queue, [{number, result} | results])
+      #when receive a answer, collect the output and accumulate in results
+      {:answer, number, output, _pid} ->
+        schedule_processes(processes, queue, [{number, output} | results])
     end
   end
 end
 
-
-to_process = List.duplicate(37,20)
+#produce some input list
+queue_to_calculate = List.duplicate(37,20)
 
 Enum.each 1..10, fn num_processes
-  -> {time, result} = :timer.tc(Scheduler, :run, [num_processes, FibSolver, :fib, to_process])
+  -> {time, result} = :timer.tc(Scheduler, :run, [num_processes, FibSolver, :fib, queue_to_calculate])
 
   if num_processes == 1 do
     IO.puts inspect result
