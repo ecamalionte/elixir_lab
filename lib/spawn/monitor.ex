@@ -1,4 +1,4 @@
-defmodule Link do
+defmodule Monitor do
   import :timer, only: [sleep: 1]
 
   def sad_function do
@@ -7,9 +7,8 @@ defmodule Link do
   end
 
   def run do
-    #without _link, you will not know about exit(:boom)
-    Process.flag(:trap_exit, true)
-    spawn_link(Link, :sad_function, [])
+    res = spawn_monitor(Monitor, :sad_function, [])
+    IO.puts inspect res
     receive do
       msg -> IO.puts "MESSAGE RECEIVED: #{inspect msg}"
     after 1000 ->
@@ -18,4 +17,4 @@ defmodule Link do
   end
 end
 
-Link.run
+Monitor.run
